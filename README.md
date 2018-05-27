@@ -36,4 +36,3 @@ Simply add this require statement to your spec_helper:
 require 'solidus_payu_gateway/factories'
 ```
 
-Copyright (c) 2018 [name of extension creator], released under the New BSD License
