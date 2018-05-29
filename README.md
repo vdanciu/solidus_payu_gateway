@@ -1,7 +1,7 @@
 SolidusPayuGateway
 ==================
 
-NOT DONE YET. DO NOT TRY TO USE!
+**NOT DONE YET. DO NOT TRY TO USE!**
 
 Installation
 ------------
