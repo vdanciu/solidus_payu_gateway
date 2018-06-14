@@ -68,11 +68,11 @@ module SolidusPayuGateway
           "lastName" => bill_address.lastname,
           "language" => I18n.locale.to_s
         },
-        "products" => [{
-            "name" => "Wireless Mouse for Laptop",
-            "unitPrice" => "15000",
-            "quantity" => "1"
-        }],
+        "products" => @payment.order.line_items.map { |item| {
+          "name" => item.product.name,
+          "unitPrice" => item.price.to_i.to_s,
+          "quantity" => item.quantity
+        } },
         "payMethods" => {
           "payMethod" => {
             "type" => "PBL",
