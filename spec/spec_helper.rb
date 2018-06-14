@@ -34,7 +34,7 @@ require 'spree/testing_support/url_helpers'
 require 'solidus_payu_gateway/factories'
 
 RSpec.configure do |config|
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
 
   # Infer an example group's spec type from the file location.
   config.infer_spec_type_from_file_location!
@@ -46,6 +46,7 @@ RSpec.configure do |config|
   # visit spree.admin_path
   # current_path.should eql(spree.products_path)
   config.include Spree::TestingSupport::UrlHelpers
+  config.include Spree::TestingSupport::ControllerRequests, type: :controller
 
   # == Mock Framework
   #
@@ -69,6 +70,18 @@ RSpec.configure do |config|
   config.before :suite do
     DatabaseCleaner.strategy = :transaction
     DatabaseCleaner.clean_with :truncation
+
+    Spree.config do |c|
+      # Public sandbox credentials http://developers.payu.com/en/overview.html#sandbox
+      c.static_model_preferences.add(
+        Spree::PaymentMethod::Payu,
+        "payu_credentials",
+        pos_id: "300746",
+        client_id: "300746",
+        client_secret: "2ee86a66e5d97e3fadc400c9f19b065d",
+        test_mode: true
+      )
+    end
   end
 
   # Before each spec check if it is a Javascript test and switch between using database transactions or not where necessary.

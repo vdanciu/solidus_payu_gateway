@@ -1,5 +1,6 @@
 # encoding: UTF-8
-$:.push File.expand_path('../lib', __FILE__)
+
+$:.push File.expand_path('lib', __dir__)
 require 'solidus_payu_gateway/version'
 
 Gem::Specification.new do |s|
