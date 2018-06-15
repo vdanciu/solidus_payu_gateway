@@ -55,7 +55,7 @@ module SolidusPayuGateway
 
       params = {
         # mandatory parameters
-        "notifyUrl" => payu_notify_url(host: order.store.url),
+        # "notifyUrl" => payu_notify_url(host: order.store.url),
         "continueUrl" => order_url(host: order.store.url, id: order.number),
         "customerIp" => order.last_ip_address,
         "merchantPosId" => "#{@payment.payment_method.preferences[:pos_id]}",
