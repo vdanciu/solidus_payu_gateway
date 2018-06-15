@@ -40,7 +40,7 @@ module SolidusPayuGateway
 
       puts "params: #{data}"
 
-      redirect_url = res["location"]
+      # redirect_url = res["location"]
 
       if !redirect_url
         raise StandardError, "Invalid redirect: #{res.inspect} body:#{res.body}"
