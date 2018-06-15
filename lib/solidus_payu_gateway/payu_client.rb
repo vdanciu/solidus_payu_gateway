@@ -38,6 +38,8 @@ module SolidusPayuGateway
       req.body = data.to_json
       res = http.request(req)
 
+      puts "params: #{data}"
+
       redirect_url = res["location"]
 
       if !redirect_url
