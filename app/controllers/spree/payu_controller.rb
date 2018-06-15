@@ -14,6 +14,7 @@ module Spree
     def notify
       puts "notify handler"
       puts "user agent: #{request.user_agent}"
+      head :ok
     end
   end
 end
