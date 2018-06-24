@@ -14,7 +14,7 @@ module SolidusPayuGateway
     end
 
     initializer "spree.solidus_payu_gateway.payment_methods", after: "spree.register.payment_methods" do |app|
-      app.config.spree.payment_methods << Spree::PaymentMethod::Payu
+      app.config.spree.payment_methods << Spree::PaymentMethod::PayuRo
     end
 
     def self.activate

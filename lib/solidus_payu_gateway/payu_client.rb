@@ -1,3 +1,9 @@
+# This client was meant to work for PayU in Romania and was written
+# based on the Polish documentation (payu.com) and later I found out
+# Romanians have their own implementation and I abandoned this code.
+# It is still here in the hope one day PayU Romania will use this API.
+# Only minimal testing has been done on this code.
+
 require 'net/http'
 
 module SolidusPayuGateway
@@ -56,9 +62,9 @@ module SolidusPayuGateway
       params = {
         # mandatory parameters
         "notifyUrl" => payu_notify_url(host: order.store.url),
-        "continueUrl" => order_url(host: order.store.url, id: order.number),
+        "continueUrl" => payu_continue_url(host: order.store.url, id: order.number),
         "customerIp" => order.last_ip_address,
-        "merchantPosId" => "#{@payment.payment_method.preferences[:pos_id]}",
+        "merchantPosId" => @payment.payment_method.preferences[:pos_id].to_s,
         "description" => order.store.name,
         "currencyCode" => @payment.payment_method.preferences[:test_mode] ? "PLN" : order.store.default_currency,
         "totalAmount" => order.amount.to_i.to_s,
@@ -70,11 +76,13 @@ module SolidusPayuGateway
           "lastName" => bill_address.lastname,
           "language" => I18n.locale.to_s
         },
-        "products" => @payment.order.line_items.map { |item| {
-          "name" => item.product.name,
-          "unitPrice" => item.price.to_i.to_s,
-          "quantity" => item.quantity
-        } },
+        "products" => @payment.order.line_items.map { |item|
+          {
+            "name" => item.product.name,
+            "unitPrice" => item.price.to_i.to_s,
+            "quantity" => item.quantity
+          }
+        },
         "payMethods" => {
           "payMethod" => {
             "type" => "PBL",
