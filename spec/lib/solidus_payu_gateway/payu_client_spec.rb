@@ -3,6 +3,7 @@ require "spec_helper"
 describe SolidusPayuGateway::PayuClient do
   let(:payment_method) { create(:payu_payment_method, preference_source: "payu_credentials") }
   let(:payment) { create(:payu_payment, payment_method: payment_method) }
+
   subject { described_class.new(payment) }
 
   describe "#new" do
