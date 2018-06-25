@@ -14,6 +14,13 @@ module SolidusPayuGateway
       to_form_html(params)
     end
 
+    def back_request_legit?(request, ctrl)
+      hash_string = request.original_url.gsub(/(\?ctrl=.*)/,'')
+      hash_string = hash_string.length.to_s + hash_string
+      computed_ctrl = compute_hmac(@payment.payment_method.preferences[:merchant_secret], hash_string)
+      ctrl == computed_ctrl
+    end
+
     private
 
     def compute_hash_string(params)
@@ -28,8 +35,12 @@ module SolidusPayuGateway
       end.join
     end
 
+    def compute_hmac(secret, message)
+      OpenSSL::HMAC.hexdigest(OpenSSL::Digest::MD5.new, secret, message)
+    end
+
     def add_signature(params, secret)
-      params['ORDER_HASH'] = OpenSSL::HMAC.hexdigest(OpenSSL::Digest::MD5.new, secret, compute_hash_string(params))
+      params['ORDER_HASH'] = compute_hmac(secret, compute_hash_string(params))
       params
     end
 
@@ -94,7 +105,8 @@ module SolidusPayuGateway
         'DISCOUNT' => '0',
         'TESTORDER' => 'TRUE',
         'LANGUAGE' => I18n.locale.to_s.upcase,
-        "BACK_REF" => payu_continue_url(host: order.store.url, id: order.number)
+        "BACK_REF" => payu_continue_url(host: order.store.url, id: order.number),
+        "TIMEOUT_URL" => checkout_url(host: order.store.url)
       }
     end
   end
