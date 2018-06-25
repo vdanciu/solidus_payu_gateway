@@ -11,8 +11,15 @@ module Spree
     end
 
     def continue
-      order_id = params[:id]
-      redirect_to spree.order_path(current_order)
+      if params[:id] != current_order.number
+        raise StandardError, "redirected to wrong order"
+      end
+      payu_client = SolidusPayuGateway::PayuRoClient.new(current_order.payments.valid.last)
+      if payu_client.back_request_legit?(request, params[:ctrl])
+        redirect_to spree.order_path(current_order)
+      else
+        head :bad_request
+      end
     end
 
     def notify
