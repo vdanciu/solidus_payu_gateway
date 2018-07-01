@@ -26,7 +26,7 @@ module SolidusPayuGateway
       payload = {
         'MERCHANT' => merchant_id,
         'ORDER_REF' => @payment.response_code,
-        'ORDER_AMOUNT' => @payment.amount,
+        'ORDER_AMOUNT' => @payment.amount.to_s,
         'ORDER_CURRENCY' => @payment.currency,
         'IDN_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S"),
       }
