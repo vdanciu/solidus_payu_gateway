@@ -1,0 +1,6 @@
+ro:
+  spree:
+    shop_name: Numele magazinului
+    payu:
+      successful_action: PayU %{action} reusita (transaction_id %{id})
+      unsuccessful_action: PayU %{action} esuata (transaction_id %{id})
