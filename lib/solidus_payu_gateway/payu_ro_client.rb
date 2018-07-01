@@ -31,6 +31,7 @@ module SolidusPayuGateway
         'IDN_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S"),
       }
       payload = add_signature(payload, capture_hash_keys, secret)
+      puts "About to send capture to #{url} with payload #{payload.inspect}"
 
     end
 

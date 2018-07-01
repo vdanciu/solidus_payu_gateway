@@ -37,7 +37,7 @@ module Spree
         response_code: params['REFNO'],
         amount: params['IPN_TOTALGENERAL']
       )
-      payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment payment)
+      payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
       payu_client.capture
 
       puts "notify handler"
