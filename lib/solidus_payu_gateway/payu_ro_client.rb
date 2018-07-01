@@ -22,7 +22,6 @@ module SolidusPayuGateway
     end
 
     def capture
-      url = "https://secure.payu.ro/order/idn.php"
       payload = {
         'MERCHANT' => merchant_id,
         'ORDER_REF' => @payment.response_code,
@@ -31,8 +30,9 @@ module SolidusPayuGateway
         'IDN_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S"),
       }
       payload = add_signature(payload, capture_hash_keys, secret)
-      puts "About to send capture to #{url} with payload #{payload.inspect}"
-
+      puts "About to send capture with payload #{payload.inspect}"
+      res = Net::HTTP.post_form(URI.parse("https://secure.payu.ro/order/idn.php"), payload)
+      puts "Response from IDN #{res.body}"
     end
 
     private
