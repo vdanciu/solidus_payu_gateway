@@ -6,7 +6,7 @@ module Spree
     skip_before_action :verify_authenticity_token, only: :notify, raise: false
 
     def gateway
-      payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment current_order)
+      payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment(current_order))
       @payu_order_form = payu_client.payu_order_form
     end
 
@@ -17,7 +17,7 @@ module Spree
       payment = order_payment current_order
       payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
       if payu_client.back_request_legit?(request, params[:ctrl])
-        complete_order(payment)
+        complete_order
         flash['order_completed'] = true
         redirect_to spree.order_path(current_order)
       else
@@ -27,22 +27,22 @@ module Spree
 
     def notify
       order_id = params['REFNOEXT']
-      raise StandardError, "no REFNOEXT received" if !order_id
-      order = Spree::Order.find_by!(number: order_id)
-      payment = order_payment order
+      raise StandardError, "no REFNOEXT received" unless order_id
+      payment = order_payment Spree::Order.find_by!(number: order_id)
+      payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
+      raise StandardError, "invalid hash on #{params}" unless payu_client.notify_request_legit?(params)
 
-      status = params['ORDERSTATUS']
-
+      # status = params['ORDERSTATUS']
       payment.update_attributes!(
         response_code: params['REFNO'],
         amount: params['IPN_TOTALGENERAL']
       )
-      payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
       payu_client.capture
+      payment.complete!
 
-      puts "notify handler"
-      puts "user agent: #{request.user_agent} params=#{params}"
-      head :ok
+      response_date = payu_client.notify_response_date
+      response_hash = payu_client.notify_response_hash(params, response_date)
+      response plain: content_tag('EPAYMENT', "#{response_date}|#{response_hash}")
     end
 
     private
@@ -51,8 +51,7 @@ module Spree
       order.payments.valid.last
     end
 
-    def complete_order(payment)
-      # payment.complete!
+    def complete_order
       current_order.complete! if current_order.can_complete?
     end
   end

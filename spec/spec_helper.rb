@@ -72,13 +72,11 @@ RSpec.configure do |config|
     DatabaseCleaner.clean_with :truncation
 
     Spree.config do |c|
-      # Public sandbox credentials http://developers.payu.com/en/overview.html#sandbox
       c.static_model_preferences.add(
-        Spree::PaymentMethod::Payu,
-        "payu_credentials",
-        pos_id: "300746",
-        client_id: "300746",
-        client_secret: "2ee86a66e5d97e3fadc400c9f19b065d",
+        Spree::PaymentMethod::PayuRo,
+        "payu_ro_credentials",
+        merchant_id: "THEMERCHANT",
+        merchant_secret: "THESECRET",
         test_mode: true
       )
     end

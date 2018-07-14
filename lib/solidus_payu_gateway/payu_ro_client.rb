@@ -4,6 +4,7 @@ require 'openssl'
 module SolidusPayuGateway
   class PayuRoClient
     include Spree::Core::Engine.routes.url_helpers
+    IDN_URL = "https://secure.payu.ro/order/idn.php"
 
     def initialize(payment)
       @payment = payment
@@ -17,8 +18,19 @@ module SolidusPayuGateway
     def back_request_legit?(request, ctrl)
       hash_string = request.original_url.gsub(/(\?ctrl=.*)/, '')
       hash_string = hash_string.length.to_s + hash_string
-      computed_ctrl = compute_hmac(@payment.payment_method.preferences[:merchant_secret], hash_string)
+      computed_ctrl = compute_hmac(secret, hash_string)
       ctrl == computed_ctrl
+    end
+
+    def notify_request_legit?(params)
+      hash_params_key = 'HASH'
+      received_hash = params[hash_params_key]
+      hash_string = compute_hash_string(params, params.except(hash_params_key).keys)
+      received_hash == compute_hmac(secret, hash_string)
+    end
+
+    def notify_response_date
+      Time.now.strftime("%Y%m%d%H%M%S")
     end
 
     def capture
@@ -27,12 +39,10 @@ module SolidusPayuGateway
         'ORDER_REF' => @payment.response_code,
         'ORDER_AMOUNT' => @payment.amount.to_s,
         'ORDER_CURRENCY' => @payment.currency,
-        'IDN_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S"),
+        'IDN_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S")
       }
       payload = add_signature(payload, capture_hash_keys, secret)
-      puts "About to send capture with payload #{payload.inspect}"
-      res = Net::HTTP.post_form(URI.parse("https://secure.payu.ro/order/idn.php"), payload)
-      puts "Response from IDN #{res.body}"
+      Net::HTTP.post_form(URI.parse(IDN_URL), payload)
     end
 
     private
@@ -102,7 +112,6 @@ module SolidusPayuGateway
 
     def get_params
       # TODO: replace VAT hardcoded value with the real one
-      payment_method = @payment.payment_method
       order = @payment.order
       bill_address = order.bill_address
       {
@@ -135,11 +144,11 @@ module SolidusPayuGateway
     end
 
     def merchant_id
-      @payment.payment_method.preferences[:merchant_id]
+      @payment.payment_method.preferences.fetch(:merchant_id)
     end
 
     def secret
-      @payment.payment_method.preferences[:merchant_secret]
+      @payment.payment_method.preferences.fetch(:merchant_secret)
     end
   end
 end

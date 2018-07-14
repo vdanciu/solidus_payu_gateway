@@ -19,9 +19,8 @@ module Spree
       %w(capture void credit)
     end
 
-    def capture(amount_in_cents, transaction_id, _gateway_options = {})
-      puts "capture #{amount_in_cents} #{transaction_id} #{_gateway_options}"
-      api_client.capture()
+    def capture(_amount_in_cents, transaction_id, _gateway_options = {})
+      api_client.capture
       response(
         false,
         Spree.t("payu.unsuccessful_action", action: "capture", id: transaction_id)
@@ -35,7 +34,7 @@ module Spree
       )
     end
 
-    def credit(amount_in_cents, transaction_id, _gateway_options = {})
+    def credit(_amount_in_cents, transaction_id, _gateway_options = {})
       response(
         false,
         Spree.t("payu.unsuccessful_action", action: "credit", id: transaction_id)
