@@ -12,7 +12,9 @@ module SolidusPayuGateway
 
     def payu_order_form
       params = add_signature(get_params, order_hash_keys, secret)
-      to_form_html(params)
+      form = to_form_html(params)
+      Rails.logger.info(form)
+      form
     end
 
     def back_request_legit?(request, ctrl)
@@ -72,9 +74,10 @@ module SolidusPayuGateway
       '<form action="https://secure.payu.ro/order/lu.php" method="post" name="payu_form">' + "\n" +
         params.reduce('') do |form, (key, value)|
           if value.is_a? Array
-            form + value.map { |item| "<input type=\"hidden\" name=\"#{key}\" id=\"#{key}\" value=\"#{item}\"/>\n" }.join
+            form + value.map { |item| "<input type=\"hidden\" name=\"#{key}\" id=\"h#{key}\" value=\"#{CGI::escapeHTML(item)}\"/>\n" }.join
           else
-            form + "<input type=\"hidden\" name=\"#{key}\" id=\"#{key}\" value=\"#{value}\"/>\n"
+            value = '' if value.nil?
+            form + "<input type=\"hidden\" name=\"#{key}\" id=\"#{key}\" value=\"#{CGI::escapeHTML(value)}\"/>\n"
           end
         end +
         '<input type="submit" value="PAYU LiveUpdate"/></form>' + "\n"
