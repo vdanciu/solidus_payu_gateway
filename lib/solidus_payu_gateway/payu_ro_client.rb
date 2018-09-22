@@ -50,9 +50,9 @@ module SolidusPayuGateway
     def compute_hash_string(params, hash_keys)
       hash_keys.map do |key|
         if params[key].is_a?(Array)
-          params[key].map { |item| "#{item.length}#{item}" }.join
+          params[key].map { |item| "#{item.bytesize}#{item}" }.join
         elsif params[key]
-          "#{params[key].length}#{params[key]}"
+          "#{params[key].bytesize}#{params[key]}"
         else
           ''
         end
@@ -111,7 +111,6 @@ module SolidusPayuGateway
     end
 
     def get_params
-      # TODO: replace VAT hardcoded value with the real one
       order = @payment.order
       bill_address = order.bill_address
       {
@@ -123,7 +122,7 @@ module SolidusPayuGateway
         'ORDER_PINFO[]' => order.line_items.map { |item| item.product.name },
         'ORDER_PRICE[]' => order.line_items.map { |item| item.price.to_s },
         'ORDER_QTY[]' => order.line_items.map { |item| item.quantity.to_s },
-        'ORDER_VAT[]' => order.line_items.map { '19' },
+        'ORDER_VAT[]' => order.line_items.map { |item| line_item_vat_rate(item) },
         'ORDER_PRICE_TYPE[]' => order.line_items.map { 'GROSS' },
         'PRICES_CURRENCY' => order.store.default_currency || 'RON',
         'PAY_METHOD' => 'CCVISAMC',
@@ -141,6 +140,16 @@ module SolidusPayuGateway
         "BACK_REF" => payu_continue_url(host: order.store.url, id: order.number),
         "TIMEOUT_URL" => checkout_url(host: order.store.url)
       }
+    end
+
+    def line_item_vat_rate(line_item)
+      # returns the percentage vat rate as string (for 19% returns 19)
+      tax_adjustments = line_item.adjustments.select { |a| a.tax? && a.source.tax_category.name.start_with?('TVA') }
+      if tax_adjustments.empty?
+        '0'
+      else
+        (tax_adjustments[0].source.amount * 100).to_i.to_s
+      end
     end
 
     def merchant_id
