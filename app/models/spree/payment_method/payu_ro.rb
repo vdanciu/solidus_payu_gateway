@@ -20,7 +20,6 @@ module Spree
     end
 
     def capture(_amount_in_cents, transaction_id, _gateway_options = {})
-      Rails.logger.info("capture in PaymentMethod with #{_amount_in_cents}, #{transaction_id}, #{_gateway_options}")
       response(
         true,
         Spree.t("payu.successful_action", action: "capture", id: transaction_id)

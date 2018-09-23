@@ -74,10 +74,10 @@ module SolidusPayuGateway
       '<form action="https://secure.payu.ro/order/lu.php" method="post" name="payu_form">' + "\n" +
         params.reduce('') do |form, (key, value)|
           if value.is_a? Array
-            form + value.map { |item| "<input type=\"hidden\" name=\"#{key}\" id=\"h#{key}\" value=\"#{CGI::escapeHTML(item)}\"/>\n" }.join
+            form + value.map { |item| "<input type=\"hidden\" name=\"#{key}\" id=\"h#{key}\" value=\"#{CGI.escapeHTML(item)}\"/>\n" }.join
           else
             value = '' if value.nil?
-            form + "<input type=\"hidden\" name=\"#{key}\" id=\"#{key}\" value=\"#{CGI::escapeHTML(value)}\"/>\n"
+            form + "<input type=\"hidden\" name=\"#{key}\" id=\"#{key}\" value=\"#{CGI.escapeHTML(value)}\"/>\n"
           end
         end +
         '<input type="submit" value="PAYU LiveUpdate"/></form>' + "\n"
