@@ -27,6 +27,7 @@ module Spree
 
     def notify
       order_id = params['REFNOEXT']
+      Rails.logger.info("PayU called notify for #{order_id}")
       raise StandardError, "no REFNOEXT received" unless order_id
       payment = order_payment Spree::Order.find_by!(number: order_id)
       payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
