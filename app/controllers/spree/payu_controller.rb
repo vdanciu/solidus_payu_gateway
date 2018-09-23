@@ -44,7 +44,7 @@ module Spree
 
       response_date = payu_client.notify_response_date
       response_hash = payu_client.notify_response_hash(params, response_date)
-      response plain: content_tag('EPAYMENT', "#{response_date}|#{response_hash}")
+      response plain: "<EPAYMENT>#{response_date}|#{response_hash}</EPAYMENT>"
     end
 
     private
