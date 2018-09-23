@@ -35,6 +35,16 @@ module SolidusPayuGateway
       Time.now.strftime("%Y%m%d%H%M%S")
     end
 
+    def notify_response_hash(params, response_date)
+      hash_params = {}
+      hash_params["IPN_PID"] = params["IPN_PID"][0]
+      hash_params["IPN_PNAME"] = params["IPN_PNAME"][0]
+      hash_params["IPN_DATE"] = params["IPN_DATE"]
+      hash_params["DATE"] = response_date
+      hash_string = compute_hash_string(hash_params, hash_params.keys)
+      compute_hmac(secret, hash_string)
+    end
+
     def capture
       payload = {
         'MERCHANT' => merchant_id,
