@@ -31,7 +31,8 @@ module Spree
       raise StandardError, "no REFNOEXT received" unless order_id
       payment = order_payment Spree::Order.find_by!(number: order_id)
       payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
-      raise StandardError, "invalid hash on #{params}" unless payu_client.notify_request_legit?(params)
+      original_params = params.except(:action, :controller)
+      raise StandardError, "invalid hash on #{original_params}" unless payu_client.notify_request_legit?(original_params)
 
       # status = params['ORDERSTATUS']
       payment.update_attributes!(
