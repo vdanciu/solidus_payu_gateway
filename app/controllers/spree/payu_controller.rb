@@ -40,7 +40,7 @@ module Spree
         amount: params['IPN_TOTALGENERAL']
       )
       payu_client.capture
-      payment.complete!
+      payment.complete! unless payment.completed?
 
       response_date = payu_client.notify_response_date
       response_hash = payu_client.notify_response_hash(params, response_date)

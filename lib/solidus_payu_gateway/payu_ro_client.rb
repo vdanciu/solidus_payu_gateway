@@ -54,7 +54,8 @@ module SolidusPayuGateway
         'IDN_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S")
       }
       payload = add_signature(payload, capture_hash_keys, secret)
-      Net::HTTP.post_form(URI.parse(IDN_URL), payload)
+      res = Net::HTTP.post_form(URI.parse(IDN_URL), payload)
+      Rails.logger.info("IDN capture response: #{res.code}, #{res.message}\n#{res.body}")
     end
 
     private
@@ -138,6 +139,7 @@ module SolidusPayuGateway
         'ORDER_VAT[]' => order.line_items.map { |item| line_item_vat_rate(item) },
         'ORDER_PRICE_TYPE[]' => order.line_items.map { 'GROSS' },
         'PRICES_CURRENCY' => order.store.default_currency || 'RON',
+        'ORDER_SHIPPING' => order.shipments.to_a.sum(&:cost),
         'PAY_METHOD' => 'CCVISAMC',
         'BILL_FNAME' => bill_address.firstname || '',
         'BILL_LNAME' => bill_address.lastname || '',
