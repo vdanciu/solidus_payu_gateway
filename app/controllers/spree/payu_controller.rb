@@ -44,7 +44,9 @@ module Spree
 
       response_date = payu_client.notify_response_date
       response_hash = payu_client.notify_response_hash(params, response_date)
-      response plain: "<EPAYMENT>#{response_date}|#{response_hash}</EPAYMENT>"
+      response_text = "<EPAYMENT>#{response_date}|#{response_hash}</EPAYMENT>"
+      Rails.logger.info("response: #{response_text}")
+      response plain: response_text
     end
 
     private
