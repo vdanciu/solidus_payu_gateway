@@ -139,7 +139,7 @@ module SolidusPayuGateway
         'ORDER_VAT[]' => order.line_items.map { |item| line_item_vat_rate(item) },
         'ORDER_PRICE_TYPE[]' => order.line_items.map { 'GROSS' },
         'PRICES_CURRENCY' => order.store.default_currency || 'RON',
-        'ORDER_SHIPPING' => order.shipments.to_a.sum(&:cost),
+        'ORDER_SHIPPING' => order.shipments.to_a.sum(&:cost).to_s,
         'PAY_METHOD' => 'CCVISAMC',
         'BILL_FNAME' => bill_address.firstname || '',
         'BILL_LNAME' => bill_address.lastname || '',
