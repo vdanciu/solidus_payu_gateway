@@ -150,7 +150,7 @@ module SolidusPayuGateway
         'BILL_FISCALCODE' => '',
         'BILL_REGNUMBER' => '',
         'DISCOUNT' => '0',
-        'TESTORDER' => 'TRUE',
+        'TESTORDER' => test_mode ? "TRUE" : "FALSE",
         'LANGUAGE' => I18n.locale.to_s.upcase,
         "BACK_REF" => payu_continue_url(host: order.store.url, id: order.number),
         "TIMEOUT_URL" => checkout_url(host: order.store.url)
@@ -174,5 +174,10 @@ module SolidusPayuGateway
     def secret
       @payment.payment_method.preferences.fetch(:merchant_secret)
     end
+
+    def test_mode
+      @payment.payment_method.preferences.fetch(:test_mode)
+    end
+
   end
 end
