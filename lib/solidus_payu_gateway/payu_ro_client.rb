@@ -6,8 +6,9 @@ module SolidusPayuGateway
     include Spree::Core::Engine.routes.url_helpers
     IDN_URL = "https://secure.payu.ro/order/idn.php"
 
-    def initialize(payment)
+    def initialize(payment, request)
       @payment = payment
+      @request = request
     end
 
     def payu_order_form
@@ -152,8 +153,15 @@ module SolidusPayuGateway
         'DISCOUNT' => '0',
         'TESTORDER' => test_mode ? "TRUE" : "FALSE",
         'LANGUAGE' => I18n.locale.to_s.upcase,
-        "BACK_REF" => payu_continue_url(host: order.store.url, id: order.number),
-        "TIMEOUT_URL" => checkout_url(host: order.store.url)
+        "BACK_REF" => payu_continue_url(
+                        host: order.store.url, 
+                        protocol: @request.protocol,
+                        port: @request.port,
+                        id: order.number),
+        "TIMEOUT_URL" => checkout_url(
+                           host: order.store.url,
+                           protocol: @request.protocol,
+                           port: @request.port)
       }
     end
 

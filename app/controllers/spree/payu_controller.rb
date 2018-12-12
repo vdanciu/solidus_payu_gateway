@@ -6,7 +6,7 @@ module Spree
     skip_before_action :verify_authenticity_token, only: :notify, raise: false
 
     def gateway
-      payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment(current_order))
+      payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment(current_order), request)
       @payu_order_form = payu_client.payu_order_form
     end
 
@@ -15,12 +15,13 @@ module Spree
         raise StandardError, "redirected to wrong order"
       end
       payment = order_payment current_order
-      payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
+      payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
       if payu_client.back_request_legit?(request, params[:ctrl])
         complete_order
         flash['order_completed'] = true
         redirect_to spree.order_path(current_order)
       else
+        Rails.logger.error("Back request not legit #{params[:ctrl]}")
         head :bad_request
       end
     end
@@ -30,7 +31,7 @@ module Spree
       Rails.logger.info("PayU called notify for #{order_id}")
       raise StandardError, "no REFNOEXT received" unless order_id
       payment = order_payment Spree::Order.find_by!(number: order_id)
-      payu_client = SolidusPayuGateway::PayuRoClient.new(payment)
+      payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
       original_params = params.except(:action, :controller)
       raise StandardError, "invalid hash on #{original_params}" unless payu_client.notify_request_legit?(original_params)
 
