@@ -150,7 +150,7 @@ module SolidusPayuGateway
         'BILL_COMPANY' => bill_address.company,
         'BILL_FISCALCODE' => '',
         'BILL_REGNUMBER' => '',
-        'DISCOUNT' => '0',
+        'DISCOUNT' => total_discount(order).to_s,
         'TESTORDER' => test_mode ? "TRUE" : "FALSE",
         'LANGUAGE' => I18n.locale.to_s.upcase,
         "BACK_REF" => payu_continue_url(
@@ -173,6 +173,10 @@ module SolidusPayuGateway
       else
         (tax_adjustments[0].source.amount * 100).to_i.to_s
       end
+    end
+
+    def total_discount(order)
+      -order.adjustments.sum(&:amount)
     end
 
     def merchant_id
