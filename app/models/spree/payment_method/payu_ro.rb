@@ -40,6 +40,10 @@ module Spree
       )
     end
 
+    def partial_name
+      'payuro'
+    end
+
     def redirect_url(_payment)
       "/payu/gateway"
     end
