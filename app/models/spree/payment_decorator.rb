@@ -1,4 +1,4 @@
-module SolidusPayuGateway
+module Spree
   module PaymentDecorator
     def redirect_url
       payment_method.redirect_url(self)
@@ -6,4 +6,4 @@ module SolidusPayuGateway
   end
 end
 
-Spree::Payment.include SolidusPayuGateway::PaymentDecorator
+Spree::Payment.include Spree::PaymentDecorator
