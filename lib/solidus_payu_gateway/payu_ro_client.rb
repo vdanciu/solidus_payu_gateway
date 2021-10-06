@@ -19,7 +19,7 @@ module SolidusPayuGateway
     end
 
     def back_request_legit?(request, ctrl)
-      hash_string = request.original_url.gsub(/(\?ctrl=.*)/, '')
+      hash_string = request.original_url.gsub(/([&\?]ctrl=[^&]*)/, '')
       hash_string = hash_string.length.to_s + hash_string
       computed_ctrl = compute_hmac(secret, hash_string)
       ctrl == computed_ctrl
