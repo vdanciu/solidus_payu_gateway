@@ -133,7 +133,7 @@ module SolidusPayuGateway
         'ORDER_REF' => order.number,
         'ORDER_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S"),
         'ORDER_PNAME[]' => order.line_items.map { |item| item.product.name },
-        'ORDER_PCODE[]' => order.line_items.map { |item| item.product.sku },
+        'ORDER_PCODE[]' => order.line_items.map { |item| item.variant.sku },
         'ORDER_PINFO[]' => order.line_items.map { |item| item.product.name },
         'ORDER_PRICE[]' => order.line_items.map { |item| item.price.to_s },
         'ORDER_QTY[]' => order.line_items.map { |item| item.quantity.to_s },
