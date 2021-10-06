@@ -36,7 +36,7 @@ module Spree
       raise StandardError, "invalid hash on #{original_params}" unless payu_client.notify_request_legit?(original_params)
 
       # status = params['ORDERSTATUS']
-      payment.update_attributes!(
+      payment.update!(
         response_code: params['REFNO'],
         amount: params['IPN_TOTALGENERAL']
       )
