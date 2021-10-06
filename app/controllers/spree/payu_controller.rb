@@ -3,7 +3,7 @@ require 'solidus_payu_gateway/payu_ro_client'
 
 module Spree
   class PayuController < Spree::StoreController
-    skip_before_action :verify_authenticity_token, only: :notify, raise: false
+    skip_before_action :verify_authenticity_token, only: [:notify, :continue], raise: false
 
     def gateway
       payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment(current_order), request)
