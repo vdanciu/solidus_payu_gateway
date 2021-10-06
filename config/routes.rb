@@ -3,4 +3,5 @@ Spree::Core::Engine.routes.draw do
   post "/payu/notify", to: "payu#notify", as: :payu_notify
   get "/payu/notify", to: "payu#notify"
   get "/payu/continue/:id", to: "payu#continue", as: :payu_continue
+  post "/payu/continue/:id", to: "payu#continue"
 end
