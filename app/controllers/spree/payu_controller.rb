@@ -63,10 +63,14 @@ module Spree
     end
 
     def log_order_essentials
-      Rails.logger.info("currency: #{current_pricing_options.currency}")
-      Rails.logger.info("guest_token: #{cookies.signed[:guest_token]}")
-      Rails.logger.info("store_id: #{current_store.id}")
-      Rails.logger.info("user_id: #{try_spree_current_user.try(:id)}")
+      log_info("currency: #{current_pricing_options.currency}")
+      log_info("guest_token: #{cookies.signed[:guest_token]}")
+      log_info("store_id: #{current_store.id}")
+      log_info("user_id: #{try_spree_current_user.try(:id)}")
+    end
+
+    def log_info(text)
+      Rails.logger.info("\t-<>-\e[34m#{text}\e[0m")
     end
   end
 end
