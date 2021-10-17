@@ -70,7 +70,7 @@ module Spree
     end
 
     def log_info(text)
-      Rails.logger.info("\t-<>-\e[34m#{text}\e[0m")
+      Rails.logger.info("\t-<>- \e[37;41m#{text}\e[0m")
     end
   end
 end
