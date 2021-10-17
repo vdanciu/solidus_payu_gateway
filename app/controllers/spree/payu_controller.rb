@@ -6,11 +6,13 @@ module Spree
     skip_before_action :verify_authenticity_token, only: [:notify, :continue], raise: false
 
     def gateway
+      log_order_essentials
       payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment(current_order), request)
       @payu_order_form = payu_client.payu_order_form
     end
 
     def continue
+      log_order_essentials
       if params[:id] != current_order.number
         raise StandardError, "redirected to wrong order"
       end
@@ -58,6 +60,13 @@ module Spree
 
     def complete_order
       current_order.complete! if current_order.can_complete?
+    end
+
+    def log_order_essentials
+      Rails.logger.info("currency: #{current_pricing_options.currency}")
+      Rails.logger.info("guest_token: #{cookies.signed[:guest_token]}")
+      Rails.logger.info("store_id: #{current_store.id}")
+      Rails.logger.info("user_id: #{try_spree_current_user.try(:id)}")
     end
   end
 end
