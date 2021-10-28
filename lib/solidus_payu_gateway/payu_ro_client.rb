@@ -11,6 +11,10 @@ module SolidusPayuGateway
       @request = request
     end
 
+    def test_mode
+      @payment.payment_method.preferences.fetch(:test_mode)
+    end
+
     def payu_order_form
       params = add_signature(get_params, order_hash_keys, secret)
       form = to_form_html(params)
@@ -37,6 +41,7 @@ module SolidusPayuGateway
     end
 
     def notify_response_hash(params, response_date)
+      return "TESTMODESONOHASH" if test_mode
       hash_params = {}
       hash_params["IPN_PID"] = params["IPN_PID"][0]
       hash_params["IPN_PNAME"] = params["IPN_PNAME"][0]
@@ -185,10 +190,6 @@ module SolidusPayuGateway
 
     def secret
       @payment.payment_method.preferences.fetch(:merchant_secret)
-    end
-
-    def test_mode
-      @payment.payment_method.preferences.fetch(:test_mode)
     end
 
   end

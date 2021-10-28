@@ -13,19 +13,25 @@ module Spree
 
     def continue
       log_order_essentials
-      if params[:id] != current_order.number
-        raise StandardError, "redirected to wrong order"
-      end
-      payment = order_payment current_order
-      payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
-      if payu_client.back_request_legit?(request, params[:ctrl])
-        complete_order
-        flash['order_completed'] = true
-        redirect_to spree.order_path(current_order)
-      else
+      
+      order = Spree::Order.find_by(number: params[:id])
+      if order
+        payment = order_payment(order)
+        payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
+        if payu_client.test_mode
+          # IPN does might not have run
+          payment.complete! unless payment.completed?
+          complete_order payment.order    
+        end
+        if payu_client.test_mode ||  payu_client.back_request_legit?(request, params[:ctrl])
+          redirect_to spree.order_path(order)
+          return
+        end
         Rails.logger.error("Back request not legit #{params[:ctrl]}")
-        head :bad_request
+      else
+        Rails.logger.error("Order not found for #{params[:id]}")
       end
+      redirect_to spree.root_path
     end
 
     def notify
@@ -35,31 +41,39 @@ module Spree
       payment = order_payment Spree::Order.find_by!(number: order_id)
       payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
       original_params = params.except(:action, :controller)
-      raise StandardError, "invalid hash on #{original_params}" unless payu_client.notify_request_legit?(original_params)
+      unless payu_client.test_mode || payu_client.notify_request_legit?(original_params)
+        raise StandardError, "invalid hash on #{original_params}"
+      end
 
-      # status = params['ORDERSTATUS']
+      status = params['ORDERSTATUS']
+      log_info("ORDERSTATUS: #{status}")
       payment.update!(
         response_code: params['REFNO'],
         amount: params['IPN_TOTALGENERAL']
       )
       payu_client.capture
       payment.complete! unless payment.completed?
+      complete_order payment.order
 
-      response_date = payu_client.notify_response_date
-      response_hash = payu_client.notify_response_hash(params, response_date)
-      response_text = "<EPAYMENT>#{response_date}|#{response_hash}</EPAYMENT>"
-      Rails.logger.info("response: #{response_text}")
-      render plain: response_text
+      render plain: notify_response(payu_client)
     end
 
     private
+
+    def notify_response(payu_client)
+      response_date = payu_client.notify_response_date
+      response_hash = payu_client.notify_response_hash(params, response_date)
+      response_text = "<EPAYMENT>#{response_date}|#{response_hash}</EPAYMENT>".tap do |text|
+        Rails.logger.info("response: #{text}")
+      end
+    end
 
     def order_payment(order)
       order.payments.valid.last
     end
 
-    def complete_order
-      current_order.complete! if current_order.can_complete?
+    def complete_order(order)
+      order.complete! if order.can_complete?
     end
 
     def log_order_essentials
