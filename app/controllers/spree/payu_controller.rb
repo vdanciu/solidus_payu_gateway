@@ -54,10 +54,10 @@ module Spree
           response_code: params['REFNO'],
           amount: params['IPN_TOTALGENERAL']
         )
-        payu_client.capture
         payment.complete! unless payment.completed?
         complete_order payment.order
       end
+      payu_client.capture
       render plain: notify_response(order_id, payu_client)
     end
 
