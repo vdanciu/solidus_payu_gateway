@@ -38,7 +38,8 @@ module Spree
     end
 
     def notify
-      log_info(params['REFNOEXT'], "notify")
+      status = params['ORDERSTATUS']
+      log_info(params['REFNOEXT'], "notify, ORDERSTATUS: #{status}")
       order_id = params['REFNOEXT']
       raise StandardError, "no REFNOEXT received" unless order_id
       payment = order_payment Spree::Order.find_by!(number: order_id)
@@ -47,17 +48,16 @@ module Spree
       unless payu_client.test_mode || payu_client.notify_request_legit?(original_params)
         raise StandardError, "invalid hash on #{original_params}"
       end
-
-      status = params['ORDERSTATUS']
-      log_info(order_id, "ORDERSTATUS: #{status}")
-      payment.update!(
-        response_code: params['REFNO'],
-        amount: params['IPN_TOTALGENERAL']
-      )
-      payu_client.capture
-      payment.complete! unless payment.completed?
-      complete_order payment.order
-
+  
+      if status == "COMPLETE"
+        payment.update!(
+          response_code: params['REFNO'],
+          amount: params['IPN_TOTALGENERAL']
+        )
+        payu_client.capture
+        payment.complete! unless payment.completed?
+        complete_order payment.order
+      end
       render plain: notify_response(order_id, payu_client)
     end
 
@@ -92,7 +92,7 @@ module Spree
     end
 
     def log_info(order, text)
-      Rails.logger.info("\t-<>- \e[37;41m[PAYU-#{order}]#{text}\e[0m")
+      Rails.logger.info("\t-<>- \e[37;41m[PAYU-#{order}] #{text}\e[0m")
     end
   end
 end
