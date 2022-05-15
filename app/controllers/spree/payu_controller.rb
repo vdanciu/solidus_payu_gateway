@@ -49,15 +49,16 @@ module Spree
         raise StandardError, "invalid hash on #{original_params}"
       end
   
-      if status == "COMPLETE"
-        payment.update!(
-          response_code: params['REFNO'],
-          amount: params['IPN_TOTALGENERAL']
-        )
-        payment.complete! unless payment.completed?
-        complete_order payment.order
-      end
+      payment.update!(
+        response_code: params['REFNO'],
+        amount: params['IPN_TOTALGENERAL']
+      )
+
       payu_client.capture
+
+      payment.complete! unless payment.completed?
+      complete_order payment.order
+
       render plain: notify_response(order_id, payu_client)
     end
 
