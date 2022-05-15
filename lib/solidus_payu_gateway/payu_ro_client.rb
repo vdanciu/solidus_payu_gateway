@@ -61,7 +61,7 @@ module SolidusPayuGateway
       }
       payload = add_signature(payload, capture_hash_keys, secret)
       res = Net::HTTP.post_form(URI.parse(IDN_URL), payload)
-      Rails.logger.info("PAYU-#{payment.order.number} IDN capture response: #{res.code}, #{res.message}\n#{res.body}")
+      Rails.logger.info("PAYU-#{@payment.order.number} IDN capture response: #{res.code}, #{res.message}\n#{res.body}")
     end
 
     private
