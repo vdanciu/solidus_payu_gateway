@@ -6,37 +6,40 @@ module Spree
     skip_before_action :verify_authenticity_token, only: [:notify, :continue], raise: false
 
     def gateway
-      log_order_essentials
+      log_order_essentials current_order, "gateway"
       payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment(current_order), request)
       @payu_order_form = payu_client.payu_order_form
     end
 
     def continue
-      log_order_essentials
+      log_order_essentials params[:id], "continue"
       
       order = Spree::Order.find_by(number: params[:id])
       if order
         payment = order_payment(order)
         payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
         if payu_client.test_mode
-          # IPN does might not have run
+          # IPN might not have run
           payment.complete! unless payment.completed?
           complete_order payment.order    
         end
         if payu_client.test_mode ||  payu_client.back_request_legit?(request, params[:ctrl])
-          redirect_to spree.order_path(order)
+          confirmation_page = spree.order_path(order)
+          log_info(params[:id], "Redirecting to #{confirmation_page}")
+          redirect_to confirmation_page
           return
         end
-        Rails.logger.error("Back request not legit #{params[:ctrl]}")
+        log_info(order.number, "Back request not legit #{params[:ctrl]}")
       else
-        Rails.logger.error("Order not found for #{params[:id]}")
+        log_info(params[:id], "Order not found for #{params[:id]}")
       end
-      redirect_to spree.root_path
+      log_info(params[:id], "Redirecting to #{spree.root_url}")
+      redirect_to spree.root_url
     end
 
     def notify
+      log_info(params['REFNOEXT'], "notify")
       order_id = params['REFNOEXT']
-      Rails.logger.info("PayU called notify for #{order_id}")
       raise StandardError, "no REFNOEXT received" unless order_id
       payment = order_payment Spree::Order.find_by!(number: order_id)
       payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
@@ -46,7 +49,7 @@ module Spree
       end
 
       status = params['ORDERSTATUS']
-      log_info("ORDERSTATUS: #{status}")
+      log_info(order_id, "ORDERSTATUS: #{status}")
       payment.update!(
         response_code: params['REFNO'],
         amount: params['IPN_TOTALGENERAL']
@@ -55,16 +58,16 @@ module Spree
       payment.complete! unless payment.completed?
       complete_order payment.order
 
-      render plain: notify_response(payu_client)
+      render plain: notify_response(order_id, payu_client)
     end
 
     private
 
-    def notify_response(payu_client)
+    def notify_response(order_number, payu_client)
       response_date = payu_client.notify_response_date
       response_hash = payu_client.notify_response_hash(params, response_date)
       response_text = "<EPAYMENT>#{response_date}|#{response_hash}</EPAYMENT>".tap do |text|
-        Rails.logger.info("response: #{text}")
+        log_info(order_number, "notify response: #{text}")
       end
     end
 
@@ -76,15 +79,20 @@ module Spree
       order.complete! if order.can_complete?
     end
 
-    def log_order_essentials
-      log_info("currency: #{current_pricing_options.currency}")
-      log_info("guest_token: #{cookies.signed[:guest_token]}")
-      log_info("store_id: #{current_store.id}")
-      log_info("user_id: #{try_spree_current_user.try(:id)}")
+    def log_order_essentials(order_number, where)
+      log_info(
+        order_number, 
+        %(log essentials: #{where}
+          currency: #{current_pricing_options.currency}
+          guest_token: #{cookies.signed[:guest_token]}
+          store_id: #{current_store.id}
+          user_id: #{try_spree_current_user.try(:id)}
+        )
+      )
     end
 
-    def log_info(text)
-      Rails.logger.info("\t-<>- \e[37;41m#{text}\e[0m")
+    def log_info(order, text)
+      Rails.logger.info("\t-<>- \e[37;41m[PAYU-#{order}]#{text}\e[0m")
     end
   end
 end
