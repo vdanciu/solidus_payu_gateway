@@ -23,6 +23,7 @@ module Spree
           payment.complete! if payu_client.test_mode
           confirmation_page = spree.order_path(order)
           log_info(params[:id], "Redirecting to #{confirmation_page}")
+          flash['order_completed'] = true
           redirect_to confirmation_page
           return
         end
