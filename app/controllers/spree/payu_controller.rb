@@ -18,12 +18,9 @@ module Spree
       if order
         payment = order_payment(order)
         payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
-        if payu_client.test_mode
-          # IPN might not have run
-          payment.complete! unless payment.completed?
-          complete_order payment.order    
-        end
         if payu_client.test_mode ||  payu_client.back_request_legit?(request, params[:ctrl])
+          complete_order payment.order
+          payment.complete! if payu_client.test_mode
           confirmation_page = spree.order_path(order)
           log_info(params[:id], "Redirecting to #{confirmation_page}")
           redirect_to confirmation_page
@@ -41,14 +38,16 @@ module Spree
       status = params['ORDERSTATUS']
       log_info(params['REFNOEXT'], "notify, ORDERSTATUS: #{status}")
       order_id = params['REFNOEXT']
+
       raise StandardError, "no REFNOEXT received" unless order_id
+      
       payment = order_payment Spree::Order.find_by!(number: order_id)
       payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
       original_params = params.except(:action, :controller)
       unless payu_client.test_mode || payu_client.notify_request_legit?(original_params)
         raise StandardError, "invalid hash on #{original_params}"
       end
-  
+
       payment.update!(
         response_code: params['REFNO'],
         amount: params['IPN_TOTALGENERAL']
@@ -56,8 +55,10 @@ module Spree
 
       payu_client.capture
 
-      payment.complete! unless payment.completed?
-      complete_order payment.order
+      if status == "COMPLETE"
+        log_info(payment.order.number, "payment complete!")
+        payment.complete! unless payment.completed?
+      end
 
       render plain: notify_response(order_id, payu_client)
     end
