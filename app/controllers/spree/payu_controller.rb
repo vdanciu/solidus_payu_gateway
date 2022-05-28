@@ -6,7 +6,7 @@ module Spree
     skip_before_action :verify_authenticity_token, only: [:notify, :continue], raise: false
 
     def gateway
-      log_order_essentials current_order, "gateway"
+      log_order_essentials current_order.number, "gateway"
       payu_client = SolidusPayuGateway::PayuRoClient.new(order_payment(current_order), request)
       @payu_order_form = payu_client.payu_order_form
     end
