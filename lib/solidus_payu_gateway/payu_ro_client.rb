@@ -163,7 +163,7 @@ module SolidusPayuGateway
                         protocol: @request.protocol,
                         port: @request.port,
                         id: order.number,
-                        guest_token: cookies.signed[:guest_token]),
+                        guest_token: @request.cookie_jar.signed[:guest_token]),
         "TIMEOUT_URL" => checkout_url(
                            host: order.store.url,
                            protocol: @request.protocol,
