@@ -21,7 +21,11 @@ module Spree
         if payu_client.test_mode ||  payu_client.back_request_legit?(request, params[:ctrl])
           complete_order payment.order
           payment.complete! if payu_client.test_mode
-          confirmation_page = spree.order_path(order)
+          extra_params = {}
+          if params[:guest_token].present?
+            extra_params[:guest_token] = params[:guest_token]
+          end
+          confirmation_page = spree.order_path(order, extra_params)
           log_info(params[:id], "Redirecting to #{confirmation_page}")
           flash['order_completed'] = true
           redirect_to confirmation_page
