@@ -4,7 +4,6 @@ require 'openssl'
 module SolidusPayuGateway
   class PayuRoClient
     include Spree::Core::Engine.routes.url_helpers
-    IDN_URL = "https://#{domain}/order/idn.php"
 
     def initialize(payment, request)
       @payment = payment
@@ -59,7 +58,7 @@ module SolidusPayuGateway
         'IDN_DATE' => Time.now.strftime("%Y-%m-%d %H:%M:%S")
       }
       payload = add_signature(payload, capture_hash_keys, secret)
-      res = Net::HTTP.post_form(URI.parse(IDN_URL), payload)
+      res = Net::HTTP.post_form(URI.parse(idn_url), payload)
       Rails.logger.info("PAYU-#{@payment.order.number} IDN capture response: #{res.code}, #{res.message}\n#{res.body}")
     end
 
@@ -192,8 +191,12 @@ module SolidusPayuGateway
       @payment.payment_method.preferences.fetch(:merchant_secret)
     end
 
+    def idn_url
+      "https://#{domain}/order/idn.php"
+    end
+
     def domain
-      test_mode ? "secure.payu.ro" : "sandbox.payu.ro"
+      test_mode ? "sandbox.payu.ro" : "secure.payu.ro"
     end
   end
 end

@@ -18,9 +18,8 @@ module Spree
       if order
         payment = order_payment(order)
         payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
-        if payu_client.test_mode ||  payu_client.back_request_legit?(request, params[:ctrl])
+        if payu_client.back_request_legit?(request, params[:ctrl])
           complete_order payment.order
-          payment.complete! if payu_client.test_mode
           extra_params = {}
           if params[:guest_token].present?
             extra_params[:guest_token] = params[:guest_token]
@@ -49,7 +48,7 @@ module Spree
       payment = order_payment Spree::Order.find_by!(number: order_id)
       payu_client = SolidusPayuGateway::PayuRoClient.new(payment, request)
       original_params = params.except(:action, :controller)
-      unless payu_client.test_mode || payu_client.notify_request_legit?(original_params)
+      unless payu_client.notify_request_legit?(original_params)
         raise StandardError, "invalid hash on #{original_params}"
       end
 
