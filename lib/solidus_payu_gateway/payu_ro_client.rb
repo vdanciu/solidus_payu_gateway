@@ -41,7 +41,6 @@ module SolidusPayuGateway
     end
 
     def notify_response_hash(params, response_date)
-      return "TESTMODESONOHASH" if test_mode
       hash_params = {}
       hash_params["IPN_PID"] = params["IPN_PID"][0]
       hash_params["IPN_PNAME"] = params["IPN_PNAME"][0]
@@ -156,7 +155,7 @@ module SolidusPayuGateway
         'BILL_FISCALCODE' => '',
         'BILL_REGNUMBER' => '',
         'DISCOUNT' => total_discount(order).to_s,
-        'TESTORDER' => test_mode ? "TRUE" : "FALSE",
+        'TESTORDER' => "FALSE",
         'LANGUAGE' => I18n.locale.to_s.upcase,
         "BACK_REF" => payu_continue_url(
                         host: order.store.url, 
@@ -194,7 +193,7 @@ module SolidusPayuGateway
     end
 
     def domain
-      !Rails.env.production? ? "secure.payu.ro" : "sandbox.payu.ro"
+      test_mode ? "secure.payu.ro" : "sandbox.payu.ro"
     end
   end
 end
