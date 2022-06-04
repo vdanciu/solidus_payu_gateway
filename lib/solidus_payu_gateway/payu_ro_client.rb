@@ -4,7 +4,7 @@ require 'openssl'
 module SolidusPayuGateway
   class PayuRoClient
     include Spree::Core::Engine.routes.url_helpers
-    IDN_URL = "https://secure.payu.ro/order/idn.php"
+    IDN_URL = "https://#{domain}/order/idn.php"
 
     def initialize(payment, request)
       @payment = payment
@@ -88,16 +88,16 @@ module SolidusPayuGateway
     end
 
     def to_form_html(params)
-      '<form action="https://secure.payu.ro/order/lu.php" method="post" name="payu_form">' + "\n" +
-        params.reduce('') do |form, (key, value)|
-          if value.is_a? Array
-            form + value.map { |item| "<input type=\"hidden\" name=\"#{key}\" id=\"h#{key}\" value=\"#{CGI.escapeHTML(item)}\"/>\n" }.join
-          else
-            value = '' if value.nil?
-            form + "<input type=\"hidden\" name=\"#{key}\" id=\"#{key}\" value=\"#{CGI.escapeHTML(value)}\"/>\n"
-          end
-        end +
-        '<input type="submit" value="PAYU LiveUpdate"/></form>' + "\n"
+      "<form action=\"https://#{domain}/order/lu.php\" method=\"post\" name=\"payu_form\">" + "\n" +
+      params.reduce('') do |form, (key, value)|
+        if value.is_a? Array
+          form + value.map { |item| "<input type=\"hidden\" name=\"#{key}\" id=\"h#{key}\" value=\"#{CGI.escapeHTML(item)}\"/>\n" }.join
+        else
+          value = '' if value.nil?
+          form + "<input type=\"hidden\" name=\"#{key}\" id=\"#{key}\" value=\"#{CGI.escapeHTML(value)}\"/>\n"
+        end
+      end +
+      '<input type="submit" value="PAYU LiveUpdate"/></form>' + "\n"
     end
 
     def order_hash_keys
@@ -193,5 +193,8 @@ module SolidusPayuGateway
       @payment.payment_method.preferences.fetch(:merchant_secret)
     end
 
+    def domain
+      !Rails.env.production? ? "secure.payu.ro" : "sandbox.payu.ro"
+    end
   end
 end
