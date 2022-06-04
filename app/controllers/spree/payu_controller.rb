@@ -63,6 +63,7 @@ module Spree
       if status == "COMPLETE"
         log_info(payment.order.number, "payment complete!")
         payment.complete! unless payment.completed?
+        payment.order.finalize!
       end
 
       render plain: notify_response(order_id, payu_client)
