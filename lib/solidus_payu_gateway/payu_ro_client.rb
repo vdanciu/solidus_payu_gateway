@@ -66,8 +66,8 @@ module SolidusPayuGateway
 
     def compute_hash_string(params, hash_keys)
       hash_keys.map do |key|
-        if params[key].is_a?(Array)
-          params[key].map { |item| "#{item.bytesize}#{item}" }.join
+        if params[key].respond_to?(:keys)
+          compute_hash_string(params[key], params[key].keys)
         elsif params[key].respond_to?(:bytesize)
           "#{params[key].bytesize}#{params[key]}"
         else
