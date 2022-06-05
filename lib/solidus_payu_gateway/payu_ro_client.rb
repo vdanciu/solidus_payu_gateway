@@ -64,16 +64,14 @@ module SolidusPayuGateway
 
     private
 
-    def compute_hash_string(params, hash_keys)
-      hash_keys.map do |key|
-        if params[key].respond_to?(:keys)
-          compute_hash_string(params[key], params[key].keys)
-        elsif params[key].respond_to?(:bytesize)
-          "#{params[key].bytesize}#{params[key]}"
-        else
-          ''
-        end
-      end.join
+    def compute_hash_string(params, hash_keys = nil)
+      if params.respond_to?(:keys)
+        (hash_keys || params.keys).map {|key| compute_hash_string(params[key])}.join
+      elsif params.is_a?(Array)
+        params.map{|p| compute_hash_string(p)}.join
+      elsif params.respond_to?(:bytesize)
+        "#{params.bytesize}#{params}"
+      end
     end
 
     def compute_hmac(secret, message)
@@ -81,7 +79,11 @@ module SolidusPayuGateway
     end
 
     def add_signature(params, hash_keys, secret)
-      params['ORDER_HASH'] = compute_hmac(secret, compute_hash_string(params, hash_keys))
+      params['ORDER_HASH'] = compute_hmac(secret,
+                                          compute_hash_string(params, hash_keys).tap { |hs| 
+                                            Rails.logger.info("hash -> #{hs}")
+                                          }
+                             )
       params
     end
 
