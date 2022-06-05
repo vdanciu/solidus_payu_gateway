@@ -68,7 +68,7 @@ module SolidusPayuGateway
       hash_keys.map do |key|
         if params[key].is_a?(Array)
           params[key].map { |item| "#{item.bytesize}#{item}" }.join
-        elsif params[key]
+        elsif params[key].respond_to?(:bytesize)
           "#{params[key].bytesize}#{params[key]}"
         else
           ''
