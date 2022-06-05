@@ -39,10 +39,10 @@ module Spree
     end
 
     def notify
-      log_info(params['REFNOEXT'], "notify params: #{params}")
+      order_id = params['REFNOEXT'] || params['merchantPaymentReference']
       status = params['ORDERSTATUS']
-      log_info(params['REFNOEXT'], "notify, ORDERSTATUS: #{status}")
-      order_id = params['REFNOEXT']
+      log_info(order_id, "notify params: #{params}")
+      log_info(order_id, "notify, ORDERSTATUS: #{status}")
 
       raise StandardError, "no REFNOEXT received" unless order_id
       
