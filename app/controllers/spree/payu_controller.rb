@@ -39,6 +39,7 @@ module Spree
     end
 
     def notify
+      log_info(params['REFNOEXT'], "notify params: #{params}")
       status = params['ORDERSTATUS']
       log_info(params['REFNOEXT'], "notify, ORDERSTATUS: #{status}")
       order_id = params['REFNOEXT']
