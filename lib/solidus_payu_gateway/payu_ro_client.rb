@@ -32,7 +32,7 @@ module SolidusPayuGateway
       hash_params_key = 'HASH'
       received_hash = params[hash_params_key]
       hash_string = compute_hash_string(params, params.except(hash_params_key).keys)
-      test_mode || (received_hash == compute_hmac(secret, hash_string))
+      received_hash == compute_hmac(secret, hash_string)
     end
 
     def notify_response_date

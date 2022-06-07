@@ -39,7 +39,7 @@ module Spree
     end
 
     def notify
-      order_id = params['REFNOEXT'] || (params['orderData'] || {})['merchantPaymentReference']
+      order_id = params['REFNOEXT']
       status = params['ORDERSTATUS']
       log_info(order_id, "notify params: #{params.inspect}")
       log_info(order_id, "notify, ORDERSTATUS: #{status}")
