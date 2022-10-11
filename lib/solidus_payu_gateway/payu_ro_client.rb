@@ -182,7 +182,7 @@ module SolidusPayuGateway
     end
 
     def total_discount(order)
-      -order.adjustments.eligible.sum(&:amount)
+      -order.all_adjustments.promotion.eligible.sum(&:amount)
     end
 
     def merchant_id
